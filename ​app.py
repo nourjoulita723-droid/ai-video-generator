@@ -2,31 +2,36 @@ import streamlit as st
 import fal_client
 import os
 
-# ضعي مفتاحك الجديد المكون من fal_sk_... بين القوسين
-os.environ["FAL_KEY"] = "مفتاحك_الجديد_هنا"
+# Set your API key here
+os.environ["FAL_KEY"] = "YOUR_FAL_KEY_HERE"
 
 st.set_page_config(page_title="AI Video Generator", page_icon="🎬")
 
-st.title("🎬 مولد الفيديوهات بالذكاء الاصطناعي")
-st.write("أدخل الوصف لتوليد فيديو:")
+st.title("🎬 AI Video Generator")
+st.write("Enter a description to generate a video:")
 
-prompt = st.text_area("الوصف (Prompt):", "A cute pink Spider-Girl and Skye from PAW Patrol, 3d cartoon style")
+prompt = st.text_area("Prompt:", "A cute pink Spider-Girl and Skye from PAW Patrol, 3d cartoon style")
 
-if st.button("🚀 توليد الفيديو"):
+if st.button("🚀 Generate Video"):
     if not prompt:
-        st.warning("يرجى كتابة وصف أولاً!")
+        st.warning("Please enter a prompt first!")
     else:
-        with st.spinner("جاري التوليد..."):
+        with st.spinner("Generating video... Please wait"):
             try:
                 result = fal_client.subscribe(
                     "fal-ai/kling-video/v1.5/pro/text-to-video",
-                    arguments={"prompt": prompt, "aspect_ratio": "16:9"}
+                    arguments={
+                        "prompt": prompt,
+                        "aspect_ratio": "16:9"
+                    }
                 )
+                
                 video_url = result.get("video", {}).get("url")
                 if video_url:
-                    st.success("تم التوليد بنجاح!")
+                    st.success("Video generated successfully!")
                     st.video(video_url)
                 else:
-                    st.error("لم يتم العثور على الفيديو.")
+                    st.error("Video URL not found in response.")
             except Exception as e:
-                st.error(f"خطأ: {e}")
+                st.error(f"Error: {e}")
+
