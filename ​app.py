@@ -1,36 +1,31 @@
 import streamlit as st
-import fal_client
+import requests
+import io
+from PIL import Image
 
-st.set_page_config(page_title="AI Video Generator", page_icon="🎬")
+st.set_page_config(page_title="Free AI Image Generator", page_icon="🎨")
 
-st.title("🎬 AI Video Generator")
-st.write("Enter a description to generate a video:")
+st.title("🎨 Free AI Image Generator")
+st.write("Generate high-quality 3D anime & cartoon images for free!")
 
-prompt = st.text_area("Prompt:", "A cute pink Spider-Girl and Skye from PAW Patrol, 3d cartoon style")
+prompt = st.text_area("Prompt:", "A cute pink Spider-Girl and Skye from PAW Patrol, 3d cartoon style, highly detailed")
 
-if st.button("🚀 Generate Video"):
+# Public free API endpoint
+API_URL = "https://api-inference.huggingface.co/models/stablediffusionapi/anything-v5"
+
+if st.button("🚀 Generate Image"):
     if not prompt:
         st.warning("Please enter a prompt first!")
     else:
-        with st.spinner("Generating video... Please wait"):
+        with st.spinner("Generating your image... Please wait"):
             try:
-                # Use key from Streamlit secrets
-                fal_key = st.secrets["FAL_KEY"]
-                
-                result = fal_client.subscribe(
-                    "fal-ai/kling-video/v1.5/pro/text-to-video",
-                    arguments={
-                        "prompt": prompt,
-                        "aspect_ratio": "16:9"
-                    },
-                    key=fal_key
-                )
-                
-                video_url = result.get("video", {}).get("url")
-                if video_url:
-                    st.success("Video generated successfully!")
-                    st.video(video_url)
+                response = requests.post(API_URL, json={"inputs": prompt})
+                if response.status_code == 200:
+                    image_bytes = response.content
+                    image = Image.open(io.BytesIO(image_bytes))
+                    st.success("Image generated successfully!")
+                    st.image(image, caption="Generated Image")
                 else:
-                    st.error("Video URL not found in response.")
+                    st.error("Server is busy, please try clicking the button again in a few seconds.")
             except Exception as e:
                 st.error(f"Error: {e}")
