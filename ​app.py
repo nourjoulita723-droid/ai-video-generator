@@ -1,9 +1,5 @@
 import streamlit as st
 import fal_client
-import os
-
-# Set your API key here
-os.environ["FAL_KEY"] = "YOUR_FAL_KEY_HERE"
 
 st.set_page_config(page_title="AI Video Generator", page_icon="🎬")
 
@@ -18,12 +14,16 @@ if st.button("🚀 Generate Video"):
     else:
         with st.spinner("Generating video... Please wait"):
             try:
+                # Use key from Streamlit secrets
+                fal_key = st.secrets["FAL_KEY"]
+                
                 result = fal_client.subscribe(
                     "fal-ai/kling-video/v1.5/pro/text-to-video",
                     arguments={
                         "prompt": prompt,
                         "aspect_ratio": "16:9"
-                    }
+                    },
+                    key=fal_key
                 )
                 
                 video_url = result.get("video", {}).get("url")
@@ -34,4 +34,3 @@ if st.button("🚀 Generate Video"):
                     st.error("Video URL not found in response.")
             except Exception as e:
                 st.error(f"Error: {e}")
-
